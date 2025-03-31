@@ -1,6 +1,6 @@
 # Documentation : Déploiement avec Docker Swarm
 ## 1. Initialiser Docker Swarm
-```sh
+```
 docker swarm init
 ```
 
@@ -8,12 +8,12 @@ docker swarm init
 Copiez `docker-compose.yml` en `docker-stack.yml` si besoin.
 
 ## 3. Déployer l'application sur le cluster
-```sh
+```
 docker stack deploy -c docker-stack.yml voting_app
 ```
 
 ## 4. Vérifier les services
-```sh
+```
 docker stack services voting_app
 ```
 
@@ -21,7 +21,7 @@ docker stack services voting_app
 Sur chaque nœud worker, exécutez la commande join fournie par `docker swarm init`.
 
 ## 6. Arrêter et nettoyer le cluster
-```sh
+```
 docker stack rm voting_app
 docker swarm leave --force
 ```

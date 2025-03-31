@@ -3,7 +3,7 @@ version: '3.8'
 
 services:
   vote:
-    build: .
+    build: ./vote
     command: python app.py
     ports:
       - "5000:5000"
@@ -13,7 +13,7 @@ services:
       - app-network
 
   worker:
-    build: .
+    build: ./worker
     depends_on:
       - redis
       - db
@@ -21,7 +21,8 @@ services:
       - app-network
 
   result:
-    build: .
+    build: ./result
+    command: npm start
     ports:
       - "5001:5001"
     depends_on:
