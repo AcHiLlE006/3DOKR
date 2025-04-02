@@ -2,32 +2,42 @@ version: '3.8'
 
 services:
   vote:
-    build: ./vote
-    command: python app.py
+    image: youruser/vote:latest
     ports:
       - "5000:5000"
     depends_on:
       - redis
     networks:
       - app-network
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
 
   worker:
-    build: ./worker
+    image: youruser/worker:latest
     depends_on:
       - redis
       - db
     networks:
       - app-network
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
 
   result:
-    build: ./result
-    command: npm start
+    image: youruser/result:latest
     ports:
       - "5001:5001"
     depends_on:
       - db
     networks:
       - app-network
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
 
   redis:
     image: "redis:alpine"
