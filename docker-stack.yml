@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   vote:
-    image: youruser/vote:latest
+    image: AcHiLlE006/vote:latest
     ports:
       - "5000:5000"
     depends_on:
@@ -15,7 +15,7 @@ services:
         condition: on-failure
 
   worker:
-    image: youruser/worker:latest
+    image: AcHiLlE006/worker:latest
     depends_on:
       - redis
       - db
@@ -27,7 +27,7 @@ services:
         condition: on-failure
 
   result:
-    image: youruser/result:latest
+    image: AcHiLlE006/result:latest
     ports:
       - "5001:5001"
     depends_on:
