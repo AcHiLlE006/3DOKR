@@ -16,7 +16,7 @@ namespace Worker
         {
             try
             {
-                var pgsql = OpenDbConnection("Server=db;Username=postgres;Password=postgres;");
+                var pgsql = OpenDbConnection("Server=db;Username=postgres;Password=postgres;Database=postgres;");
                 var redisConn = OpenRedisConnection("db");
                 var redis = redisConn.GetDatabase();
 
@@ -44,7 +44,7 @@ namespace Worker
                         if (!pgsql.State.Equals(System.Data.ConnectionState.Open))
                         {
                             Console.WriteLine("Reconnecting DB");
-                            pgsql = OpenDbConnection("Server=db;Username=postgres;Password=postgres;");
+                            pgsql = OpenDbConnection("Server=db;Username=postgres;Password=postgres;Database=postgres;");
                         }
                         else
                         {
