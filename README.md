@@ -1,67 +1,126 @@
-# 3DOKR - Déploiement Docker
+# 🐳 Projet de Vote Distribué
 
-Ce projet utilise Docker pour exécuter une stack composée de plusieurs services : `vote` (Python), `worker` (.NET), `result` (Node.js), `Redis` et `Postgres`.
+Ce projet met en place une architecture distribuée avec Docker pour permettre de voter entre deux options.  
+Il est basé sur 3 services applicatifs principaux :
 
----
+- `vote` (Frontend Flask)
+- `worker` (.NET, traite les votes)
+- `result` (Node.js, visualise les résultats)
 
-## 🚀 Utilisation locale avec Docker Compose
+Ainsi que deux services techniques :
 
-Cette méthode est idéale pour le développement ou les tests en local.
-
-### 🔧 Étapes :
-
-1. Construire et lancer les services :
-   ```bash
-   docker-compose up --build
-   ```
-
-2. Accéder aux applications :
-   - Vote App : http://localhost:5000
-   - Result App : http://localhost:5001
+- `redis` (file d’attente des votes)
+- `postgres` (stockage des votes)
 
 ---
 
-## 🐝 Déploiement avec Docker Swarm
+## 🧪 Tester localement avec Docker Compose
 
-Cette méthode est utilisée pour un déploiement en production ou en cluster.
+### 1. Lancer tous les services
+```bash
+docker-compose up --build -d
+```
 
-### 📦 Étapes :
+### 2. Vérifier l’état des services
+```bash
+docker-compose ps
+```
 
-1. **Construire les images localement** :
-   ```bash
-   docker build -t youruser/vote ./vote
-   docker build -t youruser/worker ./worker
-   docker build -t youruser/result ./result
-   ```
+### 3. Accéder aux interfaces
+- 🗳 Page de vote : http://localhost:5000
+- 📊 Résultats : http://localhost:5001
 
-2. **Pousser les images vers Docker Hub** :
-   ```bash
-   docker push youruser/vote
-   docker push youruser/worker
-   docker push youruser/result
-   ```
-
-3. **Initialiser le mode Swarm** :
-   ```bash
-   docker swarm init
-   ```
-
-4. **Déployer la stack** :
-   ```bash
-   docker stack deploy -c docker-stack.yml 3dokr
-   ```
+### 4. Voir les logs si un service pose problème
+```bash
+docker-compose logs -f
+```
 
 ---
 
-## 📝 Notes
+## 🐝 Monter un cluster Docker Swarm
 
-- Remplace `youruser` par ton nom d'utilisateur Docker Hub.
-- Le volume `db-data` est utilisé pour persister les données de Postgres.
-- Le réseau `app-network` est utilisé pour permettre la communication entre services.
+### 1. Initialiser le cluster (sur le manager)
+```bash
+docker swarm init
+```
+
+> Tu obtiendras un token et une IP pour permettre aux autres nœuds de rejoindre le cluster.
+
+### 2. Rejoindre le cluster depuis un autre nœud (worker ou manager)
+```bash
+docker swarm join --token <TOKEN> <IP_MANAGER>:2377
+```
+
+> Tu peux récupérer le token avec :
+```bash
+docker swarm join-token worker
+```
 
 ---
 
-## 📂 Fichiers importants
+## 🐳 Déploiement avec Docker Swarm
 
-- `docker-compose.yml` : pour le mode local
-- `docker-stack.yml` : pour le déploiement Swarm avec `docker stack deploy`
+Après validation en local, l'application a été déployée sur un cluster Docker Swarm.
+
+### 1. Initialisation du cluster
+
+Sur la machine principale :
+```bash
+docker swarm init
+```
+
+Cette commande a fourni un **token d’accès** permettant de rejoindre le cluster depuis d’autres nœuds :
+```bash
+docker swarm join --token <TOKEN> <IP_MANAGER>:2377
+```
+
+Les autres machines ont rejoint le cluster avec cette commande.
+
+### 2. Mise à disposition des images
+
+Les images ont été **buildées localement** puis **poussées sur Docker Hub** afin d’être accessibles depuis tous les nœuds du cluster :
+
+```bash
+docker build -t <utilisateur_dockerhub>/vote ./vote
+docker build -t <utilisateur_dockerhub>/worker ./worker
+docker build -t <utilisateur_dockerhub>/result ./result
+
+docker push <utilisateur_dockerhub>/vote
+docker push <utilisateur_dockerhub>/worker
+docker push <utilisateur_dockerhub>/result
+```
+
+### 3. Déploiement de la stack
+
+Une fois les images disponibles, le déploiement a été effectué à l’aide du fichier `docker-stack.yml` :
+
+```bash
+docker stack deploy -c docker-stack.yml 3dokr
+```
+
+### 4. Suivi et vérification
+
+Vérification des services Swarm :
+```bash
+docker service ls
+```
+
+Accès aux interfaces (depuis n’importe quel nœud du cluster) :
+- Vote : `http://<IP_DU_NOEUD>:5000`
+- Résultats : `http://<IP_DU_NOEUD>:5001`
+
+---
+
+## 🧼 Nettoyage
+
+Pour arrêter et nettoyer :
+
+### Docker Compose :
+```bash
+docker-compose down
+```
+
+### Docker Swarm :
+```bash
+docker stack rm 3dokr
+```
