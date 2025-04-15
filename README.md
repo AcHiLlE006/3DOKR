@@ -14,6 +14,10 @@ Ainsi que deux services techniques :
 
 ---
 
+Des modifications ont été effectués sur le code source afin notamment afin d'exposer sur l'application vote sur le port 5000.
+La connectionString de result a également était modifiée afin de la connecter à la base de données postgres.
+Les variables de connections de worker ont aussi étaient modifié afin d'être connecté au redis et au postgres.
+
 ## 🧪 Tester localement avec Docker Compose
 
 ### 1. Lancer tous les services
@@ -37,26 +41,6 @@ docker-compose logs -f
 
 ---
 
-## 🐝 Monter un cluster Docker Swarm
-
-### 1. Initialiser le cluster (sur le manager)
-```bash
-docker swarm init
-```
-
-> Tu obtiendras un token et une IP pour permettre aux autres nœuds de rejoindre le cluster.
-
-### 2. Rejoindre le cluster depuis un autre nœud (worker ou manager)
-```bash
-docker swarm join --token <TOKEN> <IP_MANAGER>:2377
-```
-
-> Tu peux récupérer le token avec :
-```bash
-docker swarm join-token worker
-```
-
----
 
 ## 🐳 Déploiement avec Docker Swarm
 
@@ -64,7 +48,7 @@ Après validation en local, l'application a été déployée sur un cluster Dock
 
 ### 1. Initialisation du cluster
 
-Sur la machine principale :
+Sur le noeuds manager :
 ```bash
 docker swarm init
 ```
@@ -74,7 +58,7 @@ Cette commande a fourni un **token d’accès** permettant de rejoindre le clust
 docker swarm join --token <TOKEN> <IP_MANAGER>:2377
 ```
 
-Les autres machines ont rejoint le cluster avec cette commande.
+Les autres noeuds worker ont rejoint le cluster avec cette commande.
 
 ### 2. Mise à disposition des images
 
