@@ -5,44 +5,95 @@ services:
     image: achi77/vote:latest
     ports:
       - "5000:5000"
-    depends_on:
-      - redis
     networks:
       - app-network
+    environment:
+      - REDIS_HOST=redis
+      - POSTGRES_HOST=db
     deploy:
-      replicas: 1
+      replicas: 2
       restart_policy:
         condition: on-failure
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   worker:
     image: achi77/worker:latest
-    depends_on:
-      - redis
-      - db
     networks:
       - app-network
+    environment:
+      - REDIS_HOST=redis
+      - POSTGRES_HOST=db
     deploy:
       replicas: 1
       restart_policy:
         condition: on-failure
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    healthcheck:
+      test: ["CMD", "dotnet", "--info"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   result:
     image: achi77/result:latest
     ports:
       - "5001:5001"
-    depends_on:
-      - db
     networks:
       - app-network
+    environment:
+      - POSTGRES_HOST=db
     deploy:
-      replicas: 1
+      replicas: 2
       restart_policy:
         condition: on-failure
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/" ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   redis:
     image: "redis:alpine"
     networks:
       - app-network
+    volumes:
+      - redis-data:/data
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   db:
     image: "postgres:alpine"
@@ -54,9 +105,19 @@ services:
       - db-data:/var/lib/postgresql/data
     networks:
       - app-network
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 volumes:
   db-data:
+  redis-data:
 
 networks:
   app-network:
